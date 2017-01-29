@@ -377,7 +377,7 @@ net = tflearn.embedding(net, input_dim=vocab_size, output_dim=128) # input_dim: 
 net = tflearn.lstm(net, 128, dropout=0.5) # Set the dropout to 0.5
 net = tflearn.fully_connected(net, no_of_unique_y_labels, activation='relu') # relu or softmax
 net = tflearn.regression(net, 
-                         optimizer='adagrad',  # adam or ada or adagrad # sgd
+                         optimizer='adam',  # adam or ada or adagrad # sgd
                          learning_rate=1e-4,
                          metric='accuracy',
                          loss='categorical_crossentropy')
@@ -398,7 +398,7 @@ model.fit(X_train_padded_seqs, y_train,
           validation_set=(X_test_padded_seqs, y_test), 
           n_epoch=n_epoch,
           show_metric=True, 
-          batch_size=64)
+          batch_size=200)
 
 model.save('SavedModels/model.tfl')
 print(colored('Model Saved!', 'red'))
