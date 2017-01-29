@@ -422,10 +422,10 @@ from sklearn import metrics
 
 # In[ ]:
 
-pred_class = [np.argmax(i) for i in model.predict(X_test_padded_seqs)]
-true_class = [np.argmax(i) for i in y_test]
+pred_classes = [np.argmax(i) for i in model.predict(X_test_padded_seqs)]
+true_classes = [np.argmax(i) for i in y_test]
 
-print(colored('\nRNN Classifier\'s Accuracy: %0.5f\n' % metrics.accuracy_score(true_class, pred_class), 'cyan'))
+print(colored('\nRNN Classifier\'s Accuracy: %0.5f\n' % metrics.accuracy_score(true_classes, pred_classes), 'cyan'))
 
 
 # -------------
@@ -450,18 +450,5 @@ for i in ids_of_titles:
 
 
 # -----------------------
-
-# In[ ]:
-
-metric.
-
-
-# In[ ]:
-
-import seaborn as sns
-
-plt.figure(figsize = (10,7))
-sn.heatmap(df_cm, annot=True)
-
 
 # By Jovian Lin ([http://jovianlin.com](http://jovianlin.com))
