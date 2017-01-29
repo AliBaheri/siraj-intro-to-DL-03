@@ -7,6 +7,11 @@
 # 
 # > The challenge for this video is to train a model on this dataset of video game reviews from IGN.com. Then, given some new video game title it should be able to classify it. You can use pandas to parse this dataset. Right now each review has a label that's either Amazing, Great, Good, Mediocre, Painful, or Awful. These are the emotions. Using the existing labels is extra credit. The baseline is that you can just convert the labels so that there are only 2 emotions (positive or negative). Ideally you can use an RNN via TFLearn like the one in this example, but I'll accept other types of ML models as well. You'll learn how to parse data, select appropriate features, and use a neural net on an IRL problem. 
 
+# # Accuracy Results 
+# - Dummy Classifier:        **0.25631 (25.6%)**
+# - Multinomial Naive Bayes: **0.32355 (32.4%)**
+# - RNN using `tflearn`:     **0.40xxx (40.x%)**
+
 # In[ ]:
 
 n_epoch = int(input('Enter no. of epochs for RNN training: '))
@@ -400,16 +405,19 @@ model.fit(X_train_padded_seqs, y_train,
           show_metric=True, 
           batch_size=100)
 
-model.save('SavedModels/model.tfl')
-print(colored('Model Saved!', 'red'))
+
+# In[ ]:
+
+# model.save('SavedModels/model.tfl')
+# print(colored('Model Saved!', 'red'))
 
 
 # ### Manually Load the Model
 
 # In[ ]:
 
-# model.load('SavedModels/model.tfl')
-# print(colored('Model Loaded!', 'red'))
+model.load('SavedModels/model.tfl')
+print(colored('Model Loaded!', 'red'))
 
 
 # ### RNN's Accuracy
