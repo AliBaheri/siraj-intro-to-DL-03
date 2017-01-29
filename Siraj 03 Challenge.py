@@ -374,9 +374,11 @@ net = tflearn.input_data([None, size_of_each_vector]) # The first element is the
 net = tflearn.embedding(net, input_dim=vocab_size, output_dim=128) # input_dim: vocabulary size
 net = tflearn.lstm(net, 128, dropout=0.5) # Set the dropout to 0.5
 net = tflearn.fully_connected(net, no_of_unique_y_labels, activation='relu') # relu or softmax
+#sgd = tflearn.SGD(learning_rate=1e-4, lr_decay=0.96, decay_step=1000)
 net = tflearn.regression(net, 
-                         optimizer='adam', # adam or ada or adagrad
-                         learning_rate=1e-4,
+                         optimizer='adagrad',  # adam or ada or adagrad # sgd
+                         learning_rate=1e-5,
+                         metric='accuracy',
                          loss='categorical_crossentropy')
 
 
@@ -395,10 +397,10 @@ model.fit(X_train_padded_seqs, y_train,
           validation_set=(X_test_padded_seqs, y_test), 
           n_epoch=n_epoch,
           show_metric=True, 
-          batch_size=100)
+          batch_size=50)
 
 model.save('SavedModels/model.tfl')
-print('Model Saved!')
+print(colored('Model Saved!', 'red'))
 
 
 # ### Manually Load the Model
@@ -406,7 +408,7 @@ print('Model Saved!')
 # In[ ]:
 
 # model.load('SavedModels/model.tfl')
-# print('Model Loaded!')
+# print(colored('Model Loaded!', 'red'))
 
 
 # ### RNN's Accuracy
