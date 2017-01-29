@@ -451,4 +451,17 @@ for i in ids_of_titles:
 
 # -----------------------
 
+# In[ ]:
+
+metric.
+
+
+# In[ ]:
+
+import seaborn as sns
+
+plt.figure(figsize = (10,7))
+sn.heatmap(df_cm, annot=True)
+
+
 # By Jovian Lin ([http://jovianlin.com](http://jovianlin.com))
