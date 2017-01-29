@@ -374,12 +374,11 @@ print('no_of_unique_y_labels:', no_of_unique_y_labels)
 
 net = tflearn.input_data([None, size_of_each_vector]) # The first element is the "batch size" which we set to "None"
 net = tflearn.embedding(net, input_dim=vocab_size, output_dim=128) # input_dim: vocabulary size
-net = tflearn.lstm(net, 128, dropout=0.5) # Set the dropout to 0.5
+net = tflearn.lstm(net, 128, dropout=0.6) # Set the dropout to 0.5
 net = tflearn.fully_connected(net, no_of_unique_y_labels, activation='relu') # relu or softmax
 net = tflearn.regression(net, 
                          optimizer='adam',  # adam or ada or adagrad # sgd
                          learning_rate=1e-4,
-                         metric='accuracy',
                          loss='categorical_crossentropy')
 
 
@@ -387,7 +386,8 @@ net = tflearn.regression(net,
 
 # In[ ]:
 
-model = tflearn.DNN(net, tensorboard_verbose=0, checkpoint_path='SavedModels/model.tfl.ckpt')
+#model = tflearn.DNN(net, tensorboard_verbose=0, checkpoint_path='SavedModels/model.tfl.ckpt')
+model = tflearn.DNN(net, tensorboard_verbose=0)
 
 
 # ### Train the Model & Save the Model
@@ -398,7 +398,7 @@ model.fit(X_train_padded_seqs, y_train,
           validation_set=(X_test_padded_seqs, y_test), 
           n_epoch=n_epoch,
           show_metric=True, 
-          batch_size=200)
+          batch_size=100)
 
 model.save('SavedModels/model.tfl')
 print(colored('Model Saved!', 'red'))
