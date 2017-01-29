@@ -3,24 +3,23 @@
 
 # # Siraj's 03 Challenge
 # 
-# The challenge for this video is to train a model on this dataset of video game reviews from IGN.com. Then, given some new video game title it should be able to classify it. You can use pandas to parse this dataset. 
+# ### This is a response to the Coding Challenge in: [https://youtu.be/si8zZHkufRY](https://youtu.be/si8zZHkufRY?t=9m4s)
 # 
-# Right now each review has a label that's either Amazing, Great, Good, Mediocre, Painful, or Awful. These are the emotions. Using the existing labels is extra credit. 
-# 
-# The baseline is that you can just convert the labels so that there are only 2 emotions (positive or negative). Ideally you can use an RNN via TFLearn like the one in this example, but I'll accept other types of ML models as well.
-# 
-# You'll learn how to parse data, select appropriate features, and use a neural net on an IRL problem. 
-# 
-# Remember to ask each other questions for help in the Slack channel. Good luck!
+# > The challenge for this video is to train a model on this dataset of video game reviews from IGN.com. Then, given some new video game title it should be able to classify it. You can use pandas to parse this dataset. Right now each review has a label that's either Amazing, Great, Good, Mediocre, Painful, or Awful. These are the emotions. Using the existing labels is extra credit. The baseline is that you can just convert the labels so that there are only 2 emotions (positive or negative). Ideally you can use an RNN via TFLearn like the one in this example, but I'll accept other types of ML models as well. You'll learn how to parse data, select appropriate features, and use a neural net on an IRL problem. 
 
 # In[ ]:
 
-n_epoch = int(input('Enter no. of Epoch for RNN training: '))
+n_epoch = int(input('Enter no. of epochs for RNN training: '))
 
 
 # In[ ]:
 
-print('n_epoch:', n_epoch)
+from termcolor import colored
+
+
+# In[ ]:
+
+print(colored('No. of epochs: %d' % n_epoch, 'red'))
 
 
 # In[ ]:
@@ -41,7 +40,7 @@ original_ign.head(10)
 
 # In[ ]:
 
-original_ign.shape
+print('original_ign.shape:', original_ign.shape)
 
 
 # ### Check out all the unique `score_phrase` as well as their `counts`
@@ -53,7 +52,7 @@ original_ign.score_phrase.value_counts()
 
 # # Data Preprocessing
 # 
-# As always, we gotta perform preprocessing on our Dataset before training our Model.
+# As always, we gotta perform preprocessing on our Dataset before training our model(s).
 
 # ### Convert `score_phrase` to binary sentiments and add a new column called `sentiment`
 
@@ -66,12 +65,7 @@ original_ign['sentiment'] = original_ign.score_phrase.isin(bad_phrases).map({Tru
 # In[ ]:
 
 # Remove "Disaster"
-# original_ign = original_ign[original_ign['score_phrase'] != 'Disaster']
-
-
-# In[ ]:
-
-original_ign.shape
+original_ign = original_ign[original_ign['score_phrase'] != 'Disaster']
 
 
 # In[ ]:
@@ -130,7 +124,7 @@ ign['text'] = ign['title'].str.cat(ign['platform'], sep=' ').str.cat(ign['genre'
 
 # In[ ]:
 
-ign.shape
+print('Shape of \"ign\" DataFrame:', ign.shape)
 
 
 # In[ ]:
@@ -140,24 +134,34 @@ ign.head(10)
 
 # ![http://www.westernbands.net/userdata/news_picupload/pic_sid1070-0-norm.jpg](http://www.westernbands.net/userdata/news_picupload/pic_sid1070-0-norm.jpg)
 
-# In[ ]:
-
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.pipeline import make_pipeline
-from sklearn.model_selection import cross_val_score
-
+# # Here, I'll treat this as a `multiclass problem` where I attempt to predict the labels (i.e. the `score_phrases`)
+# 
+# Examples of **score_phrases**: 
+# - Great        
+# - Good         
+# - Okay        
+# - Mediocre    
+# - Amazing      
+# - Bad        
+# - Awful        
+# - Painful      
+# - Unbearable      
+# - Masterpiece     
 
 # In[ ]:
 
 X = ign.text
-y = ign.sentiment  # ign.score_phrase
+y = ign.score_phrase
 
 
-# # Model #0: The DUMMY Classifier (Always Choose the Most Frequent Class)
+# # Model #0: The DUMMY Classifier (Always Choose the *Most Frequent* Class)
 
 # In[ ]:
 
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.dummy import DummyClassifier
+from sklearn.pipeline import make_pipeline
+from sklearn.model_selection import cross_val_score
 
 
 # In[ ]:
@@ -177,88 +181,40 @@ dummy_pipeline.named_steps
 
 # Cross Validation
 cv = cross_val_score(dummy_pipeline, X, y, scoring='accuracy', cv=10, n_jobs=-1)
-print(cv.mean())
+print(colored('\nDummy Classifier\'s Accuracy: %0.5f\n' % cv.mean(), 'yellow'))
 
 
-# # Model #1: MultinomialNB Sentiment Classifier
-
-# In[ ]:
-
-from sklearn.naive_bayes import MultinomialNB        
-
-
-# ### Pipeline = TfidfVectorizer + MultinomialNB
+# # Model #1: MultinomialNB Classifier
 
 # In[ ]:
 
-vect = TfidfVectorizer(stop_words='english', token_pattern=r'\b\w{2,}\b')
-clf = MultinomialNB()
-
-pipeline = make_pipeline(vect, clf)
+from sklearn.naive_bayes import MultinomialNB
 
 
 # In[ ]:
 
-pipeline.named_steps
+vect = TfidfVectorizer(stop_words='english', 
+                       token_pattern=r'\b\w{2,}\b',
+                       min_df=1, max_df=0.1,
+                       ngram_range=(1,2))
+mnb = MultinomialNB(alpha=2)
+
+mnb_pipeline = make_pipeline(vect, mnb)
+
+
+# In[ ]:
+
+mnb_pipeline.named_steps
 
 
 # In[ ]:
 
 # Cross Validation
-cv = cross_val_score(pipeline, X, y, scoring='accuracy', cv=10, n_jobs=-1)
-cv.mean()  
+cv = cross_val_score(mnb_pipeline, X, y, scoring='accuracy', cv=10, n_jobs=-1)
+print(colored('\nMultinomialNB Classifier\'s Accuracy: %0.5f\n' % cv.mean(), 'green'))
 
 
-# ### Now, let's tune our parameters using `scikit-learn`'s Grid Search
-
-# In[ ]:
-
-from sklearn.model_selection import GridSearchCV     
-
-
-# In[ ]:
-
-param_dict = {'tfidfvectorizer__min_df'     : [1], 
-              'tfidfvectorizer__max_df'     : [0.1],
-              'tfidfvectorizer__ngram_range': [(1,2)],
-              'multinomialnb__alpha'        : [2]
-              }
-
-estimator = GridSearchCV( pipeline, param_dict, scoring='accuracy', cv=10, n_jobs=-1 )
-estimator.fit(X, y)
-
-
-# In[ ]:
-
-estimator.best_estimator_
-
-
-# In[ ]:
-
-estimator.best_params_
-
-
-# In[ ]:
-
-estimator.best_score_
-
-
-# ### Prediction
-
-# In[ ]:
-
-ids_of_titles = range(1, 4)
-
-
-# In[ ]:
-
-for i in ids_of_titles:
-    print(X[i])
-    print(estimator.predict([X[i]]))
-    print()
-
-
-# # Model #2: RNN Sentiment Classifier
+# # Model #2: RNN Classifier using `TFLearn`
 
 # In[ ]:
 
@@ -267,17 +223,15 @@ from tflearn.data_utils import to_categorical, pad_sequences
 from tflearn.datasets import imdb
 
 
+# ### Train-Test-Split
+
 # In[ ]:
 
 from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=42)
 
 
-# In[ ]:
-
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.10, random_state=1)
-
-
-# ### Create `X_train_dtm`
+# ### Create the `vocab` (so that we can create `X_word_ids` from `X`)
 
 # In[ ]:
 
@@ -287,140 +241,175 @@ vect = CountVectorizer(ngram_range=(1,1), token_pattern=r'\b\w{1,}\b')
 
 # In[ ]:
 
-X_train_dtm = vect.fit_transform(X_train)
+vect.fit(X_train)
+vocab = vect.vocabulary_
 
 
 # In[ ]:
 
-X_train_dtm_df = pd.DataFrame(X_train_dtm.toarray())
-X_train_dtm_df.head()
+def convert_X_to_X_word_ids(X):
+    return X.apply( lambda x: [vocab[w] for w in [w.lower().strip() for w in x.split()] if w in vocab] )
 
 
 # In[ ]:
 
-X_train_dtm_df.shape
+X_train_word_ids = convert_X_to_X_word_ids(X_train)
+X_test_word_ids  = convert_X_to_X_word_ids(X_test)
 
 
-# ### Create `X_test_dtm`
-
-# In[ ]:
-
-X_test_dtm = vect.transform(X_test)
-
+# ### Difference between X(_train/_test) and X(_train_word_ids/test_word_ids)
 
 # In[ ]:
 
-X_test_dtm_df = pd.DataFrame(X_test_dtm.toarray())
-X_test_dtm_df.head()
+X_train.head()
 
 
 # In[ ]:
 
-X_test_dtm_df.shape
+X_train_word_ids.head()
+
+
+# In[ ]:
+
+print('X_train_word_ids.shape:', X_train_word_ids.shape)
+print('X_test_word_ids.shape:', X_test_word_ids.shape)
 
 
 # ### Sequence Padding
 
 # In[ ]:
 
-def helper_func(some_list):
-    output = list()
-    for idx, elem in enumerate(some_list):
-        if elem != 0:
-            output.append(idx)
-    return output
+X_train_padded_seqs = pad_sequences(X_train_word_ids, maxlen=20, value=0)
+X_test_padded_seqs  = pad_sequences(X_test_word_ids , maxlen=20, value=0)
 
 
 # In[ ]:
 
-X_test_dtm_df.apply(lambda x: helper_func(x), axis=1).head(10)
+print('X_train_padded_seqs.shape:', X_train_padded_seqs.shape)
+print('X_test_padded_seqs.shape:', X_test_padded_seqs.shape)
 
 
 # In[ ]:
 
-X_train_padded_sequences = pad_sequences(X_train_dtm_df.apply(lambda x: helper_func(x), axis=1), maxlen=100, value=0)
-X_test_padded_sequences  = pad_sequences(X_test_dtm_df.apply( lambda x: helper_func(x), axis=1), maxlen=100, value=0)
+pd.DataFrame(X_train_padded_seqs).head()
 
 
 # In[ ]:
 
-print(X_train_padded_sequences.shape)
-print(X_test_padded_sequences.shape)
-
-
-# In[ ]:
-
-pd.DataFrame(X_train_padded_sequences).head()
-
-
-# In[ ]:
-
-pd.DataFrame(X_test_padded_sequences).head()
+pd.DataFrame(X_test_padded_seqs).head()
 
 
 # ### Convert (y) labels to vectors
 
 # In[ ]:
 
-y_train = to_categorical(y_train.map({'Positive':1, 'Negative':0}), nb_classes=2)
-y_test  = to_categorical(y_test.map( {'Positive':1, 'Negative':0}), nb_classes=2)
+unique_y_labels = list(y_train.value_counts().index)
+unique_y_labels
 
 
 # In[ ]:
 
-y_train
+len(unique_y_labels)
 
 
 # In[ ]:
 
-print(y_train.shape)
-print(y_test.shape)
+from sklearn import preprocessing
+le = preprocessing.LabelEncoder()
+le.fit(unique_y_labels)
+
+
+# In[ ]:
+
+# print('')
+# print(unique_y_labels)
+# print(le.transform(unique_y_labels))
+# print('')
+
+
+# In[ ]:
+
+print('')
+for label_id, label_name in zip(le.transform(unique_y_labels), unique_y_labels):
+    print('%d: %s' % (label_id, label_name))
+print('')
+
+
+# In[ ]:
+
+y_train = to_categorical(y_train.map(lambda x: le.transform([x])[0]), nb_classes=len(unique_y_labels))
+y_test  = to_categorical(y_test.map(lambda x:  le.transform([x])[0]), nb_classes=len(unique_y_labels))
+
+
+# In[ ]:
+
+y_train[0:3]
+
+
+# In[ ]:
+
+print('y_train.shape:', y_train.shape)
+print('y_test.shape:', y_test.shape)
 
 
 # ### Network Building
 
 # In[ ]:
 
-size_of_input_dim = X_train_dtm_df.shape[1]
-size_of_input_dim
+size_of_each_vector = X_train_padded_seqs.shape[1]
+vocab_size = len(vocab)
+no_of_unique_y_labels = len(unique_y_labels)
 
 
 # In[ ]:
 
-net = tflearn.input_data([None, 100]) # The first element is the "batch size" which we set to "None"
-net = tflearn.embedding(net, input_dim=size_of_input_dim, output_dim=128) # input_dim: Vocabulary size (number of ids)
-net = tflearn.lstm(net, 128, dropout=0.5) # Long Short Term Memory Recurrent Layer
-net = tflearn.fully_connected(net, 2, activation='softmax') # relu or softmax
+print('size_of_each_vector:', size_of_each_vector)
+print('vocab_size:', vocab_size)
+print('no_of_unique_y_labels:', no_of_unique_y_labels)
+
+
+# In[ ]:
+
+net = tflearn.input_data([None, size_of_each_vector]) # The first element is the "batch size" which we set to "None"
+net = tflearn.embedding(net, input_dim=vocab_size, output_dim=128) # input_dim: vocabulary size
+net = tflearn.lstm(net, 128, dropout=0.5) # Set the dropout to 0.5
+net = tflearn.fully_connected(net, no_of_unique_y_labels, activation='relu') # relu or softmax
 net = tflearn.regression(net, 
-                         optimizer='adam', 
+                         optimizer='adam', # adam or ada or adagrad
                          learning_rate=1e-4,
                          loss='categorical_crossentropy')
 
 
-# ### Train the Model
+# ### Intialize the Model
 
 # In[ ]:
 
-model = tflearn.DNN(net, tensorboard_verbose=0)
+model = tflearn.DNN(net, tensorboard_verbose=0, checkpoint_path='SavedModels/model.tfl.ckpt')
 
-model.fit(X_train_padded_sequences, y_train, 
+
+# ### Train the Model & Save the Model
+
+# In[ ]:
+
+model.fit(X_train_padded_seqs, y_train, 
+          validation_set=(X_test_padded_seqs, y_test), 
           n_epoch=n_epoch,
-          validation_set=(X_test_padded_sequences, y_test), 
           show_metric=True, 
-          batch_size=64)
+          batch_size=100)
+
+model.save('SavedModels/model.tfl')
+print('Model Saved!')
 
 
-# ### Save Model
+# ### Manually Load the Model
 
 # In[ ]:
 
-# Manually save model
-model.save("model.tfl")
-
-print('\nModel Saved!\n')
+# model.load('SavedModels/model.tfl')
+# print('Model Loaded!')
 
 
-# ### Use `scikit-learn`'s metric for evaluation
+# ### RNN's Accuracy
 
 # In[ ]:
 
@@ -428,50 +417,35 @@ import numpy as np
 from sklearn import metrics
 
 
-# ### Accuracy
-
 # In[ ]:
 
-pred_class = [np.argmax(i) for i in model.predict(X_test_padded_sequences)]
+pred_class = [np.argmax(i) for i in model.predict(X_test_padded_seqs)]
 true_class = [np.argmax(i) for i in y_test]
 
-print('Accuracy:', metrics.accuracy_score(true_class, pred_class))
+print(colored('\nRNN Classifier\'s Accuracy: %0.5f\n' % metrics.accuracy_score(true_class, pred_class), 'cyan'))
 
 
-# ### Show some predicted samples (focus on True Negatives & False Negatives -- as the "Negatives" are the minority class)
+# -------------
+
+# ### Show some predicted samples
 
 # In[ ]:
 
-ids_of_titles = range(X_test.shape[0]) # range(0,10)
+ids_of_titles = range(0,10) # range(X_test.shape[0]) 
 
 n_of_true_negatives = 0
 n_of_false_negatives = 0
 
 for i in ids_of_titles:
-    pred_class = np.argmax(model.predict([X_test_padded_sequences[i]]))
+    pred_class = np.argmax(model.predict([X_test_padded_seqs[i]]))
     true_class = np.argmax(y_test[i])
     
-    #True Negative
-    if pred_class == true_class == 0:
-        if n_of_true_negatives > 5:
-            continue
-        print('TRUE NEGATIVE [%d of 5]' % n_of_true_negatives)
-        print(X_test.values[i])
-        print('Pred: %s | Actual: %s' % (pred_class, true_class) )
-        print()
-        n_of_true_negatives += 1
-        
-    elif ((pred_class == 0) and (true_class == 1)):
-        if n_of_false_negatives > 5:
-            continue
-        print('*FALSE* NEGATIVE [%d of 5]' % n_of_false_negatives)
-        print(X_test.values[i])
-        print('Pred: %s | Actual: %s' % (pred_class, true_class) )
-        print()
-        n_of_false_negatives += 1
+    print(X_test.values[i])
+    print('pred_class:', le.inverse_transform(pred_class))
+    print('true_class:', le.inverse_transform(true_class))
+    print('')
 
 
-# In[ ]:
+# -----------------------
 
-# ign[ ign.text.str.contains('Attack of the Movies 3D Xbox') ]
-
+# By Jovian Lin ([http://jovianlin.com](http://jovianlin.com))

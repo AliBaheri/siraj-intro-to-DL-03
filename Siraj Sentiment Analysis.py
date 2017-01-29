@@ -147,5 +147,5 @@ model.fit(trainX, trainY, validation_set=(testX, testY), show_metric=True, batch
 
 # In[ ]:
 
-model.p
+
 
