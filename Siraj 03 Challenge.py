@@ -410,7 +410,7 @@ print('no_of_unique_y_labels:', no_of_unique_y_labels)
 
 net = tflearn.input_data([None, size_of_each_vector]) # The first element is the "batch size" which we set to "None"
 net = tflearn.embedding(net, input_dim=vocab_size, output_dim=128) # input_dim: vocabulary size
-net = tflearn.lstm(net, 128, dropout=0.6) # Set the dropout to 0.5
+net = tflearn.lstm(net, 128, dropout=0.6) # Set the dropout to 0.6
 net = tflearn.fully_connected(net, no_of_unique_y_labels, activation='softmax') # relu or softmax
 net = tflearn.regression(net, 
                          optimizer='adam',  # adam or ada or adagrad # sgd
@@ -476,9 +476,6 @@ print(colored('\nRNN Classifier\'s Accuracy: %0.5f\n' % metrics.accuracy_score(t
 # In[61]:
 
 ids_of_titles = range(0,21) # range(X_test.shape[0]) 
-
-n_of_true_negatives = 0
-n_of_false_negatives = 0
 
 for i in ids_of_titles:
     pred_class = np.argmax(model.predict([X_test_padded_seqs[i]]))
